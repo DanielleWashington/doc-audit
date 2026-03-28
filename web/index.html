@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>doc-audit — Is Your Documentation a Decision System?</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0A0A0A;
+      --bg2: #111111;
+      --bg3: #1A1A1A;
+      --border: #222;
+      --accent: #F5FF40;
+      --accent2: #BFCA00;
+      --text: #F0F0F0;
+      --muted: #666;
+      --muted2: #888;
+      --bad: #FF4444;
+      --bad-bg: rgba(255,68,68,0.08);
+      --good: #44FF88;
+      --good-bg: rgba(68,255,136,0.07);
+      --day0: #A78BFA;
+      --day1: #F5FF40;
+      --day2: #FB923C;
+      --agent: #38BDF8;
+      --header-bg: rgba(10,10,10,0.92);
+      --drop-bg: rgba(10,10,10,0.95);
+      --sans: 'Space Grotesk', system-ui, sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    [data-theme="light"] {
+      --bg: #F7F7F2;
+      --bg2: #EEEEE9;
+      --bg3: #E3E3DE;
+      --border: #CECEC6;
+      --accent: #5C6500;
+      --accent2: #444B00;
+      --text: #0F0F0F;
+      --muted: #888;
+      --muted2: #555;
+      --bad: #CC2020;
+      --bad-bg: rgba(204,32,32,0.08);
+      --good: #1A7A3C;
+      --good-bg: rgba(26,122,60,0.08);
+      --day0: #6D28D9;
+      --day1: #5C6500;
+      --day2: #C2410C;
+      --agent: #0369A1;
+      --header-bg: rgba(247,247,242,0.92);
+      --drop-bg: rgba(247,247,242,0.97);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100dvh;
+      overflow-x: hidden;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* ── Header ── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 20px; }
+
+    .toggle-group {
+      display: flex;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .toggle-btn {
+      padding: 6px 14px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      background: none;
+      border: none;
+      color: var(--muted2);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 600;
+    }
+
+    .toggle-btn:not(.active):hover { color: var(--text); }
+
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: none;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      transition: border-color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .theme-btn:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+    .blog-link {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: color 0.15s;
+    }
+    .blog-link:hover { color: var(--accent); }
+
+    /* ── Main layout ── */
+    main {
+      padding-top: 65px;
+      min-height: 100dvh;
+    }
+
+    /* ── Drop zone ── */
+    #drop-zone {
+      position: fixed;
+      inset: 0;
+      background: var(--drop-bg);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      border: 3px dashed var(--accent);
+    }
+
+    #drop-zone.active { display: flex; }
+
+    #drop-zone p {
+      font-family: var(--mono);
+      font-size: 18px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Decision Tree ── */
+    #tree-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px 80px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 52px;
+      min-height: 24px;
+    }
+
+    .crumb {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .crumb-sep {
+      font-size: 10px;
+      color: var(--border);
+    }
+
+    .crumb.current {
+      color: var(--accent);
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 52px 52px 44px;
+      animation: cardIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .phase-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 28px;
+      border: 1px solid currentColor;
+    }
+
+    .phase-tag.day0 { color: var(--day0); background: color-mix(in srgb, var(--day0) 10%, transparent); }
+    .phase-tag.day1 { color: var(--day1); background: color-mix(in srgb, var(--day1) 10%, transparent); }
+    .phase-tag.day2 { color: var(--day2); background: color-mix(in srgb, var(--day2) 10%, transparent); }
+
+    .card-question {
+      font-size: clamp(26px, 4.5vw, 40px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 40px;
+    }
+
+    /* ── Choices ── */
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .choice-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px 24px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, background 0.15s, transform 0.1s;
+      width: 100%;
+    }
+
+    .choice-btn:hover {
+      border-color: var(--accent);
+      background: rgba(245,255,64,0.04);
+      transform: translateX(3px);
+    }
+
+    .choice-btn:active { transform: translateX(1px); }
+
+    .choice-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      padding-top: 2px;
+      flex-shrink: 0;
+      width: 20px;
+    }
+
+    .choice-text { flex: 1; }
+
+    .choice-label {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .choice-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Terminal node ── */
+    .terminal-card .card-question {
+      font-size: clamp(20px, 3.5vw, 28px);
+      margin-bottom: 28px;
+    }
+
+    .doc-panel {
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .doc-panel.good {
+      background: var(--good-bg);
+      border: 1px solid rgba(68,255,136,0.2);
+    }
+
+    .doc-panel.bad {
+      background: var(--bad-bg);
+      border: 1px solid rgba(255,68,68,0.2);
+    }
+
+    .doc-panel-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .doc-panel.good .doc-panel-label { color: var(--good); }
+    .doc-panel.bad .doc-panel-label { color: var(--bad); }
+
+    .doc-panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted2);
+      margin-bottom: 8px;
+    }
+
+    .doc-panel-body {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    /* if/then callouts in agent mode */
+    .if-then {
+      display: inline;
+      font-family: var(--mono);
+      font-size: 13px;
+      background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.3);
+      border-radius: 4px;
+      padding: 1px 6px;
+      color: var(--agent);
+    }
+
+    body.agent-mode .if-then {
+      background: rgba(56,189,248,0.2);
+      border-color: rgba(56,189,248,0.6);
+      font-weight: 500;
+    }
+
+    .bad-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: 16px;
+    }
+
+    .bad-toggle-btn:hover { color: var(--bad); border-color: var(--bad); }
+    .bad-toggle-btn.open { color: var(--bad); border-color: var(--bad); }
+
+    .bad-panel-wrap {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .bad-panel-wrap.open { max-height: 500px; }
+
+    .annotation {
+      margin-top: 24px;
+      padding: 16px 20px;
+      background: rgba(245,255,64,0.05);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .annotation-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .annotation-body {
+      font-size: 13px;
+      color: var(--muted2);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* Agent mode narrative collapse */
+    .narrative {
+      transition: opacity 0.3s, max-height 0.4s;
+      max-height: 200px;
+      overflow: hidden;
+    }
+
+    body.agent-mode .narrative {
+      opacity: 0.35;
+      max-height: 60px;
+    }
+
+    .agent-note {
+      display: none;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--agent);
+      letter-spacing: 0.05em;
+      padding: 8px 12px;
+      background: rgba(56,189,248,0.06);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+
+    body.agent-mode .agent-note { display: block; }
+
+    /* ── Actions ── */
+    .card-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover { opacity: 0.9; }
+
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted2);
+    }
+
+    .btn-ghost:hover { border-color: var(--muted2); color: var(--text); }
+
+    /* ── Hero ── */
+    #hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 20px 40px;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: clamp(44px, 7vw, 88px);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      margin-bottom: 20px;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2.2vw, 20px);
+      color: var(--muted2);
+      max-width: 560px;
+      line-height: 1.6;
+      margin-bottom: 52px;
+    }
+
+    .hero-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 760px;
+      margin-bottom: 32px;
+    }
+
+    .hero-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 28px 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, transform 0.15s, background 0.2s;
+    }
+
+    .hero-card:hover {
+      transform: translateY(-4px);
+      background: var(--bg3);
+    }
+
+    .hero-card.day0:hover { border-color: var(--day0); }
+    .hero-card.day1:hover { border-color: var(--day1); }
+    .hero-card.day2:hover { border-color: var(--day2); }
+
+    .hero-card-day {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .hero-card.day0 .hero-card-day { color: var(--day0); }
+    .hero-card.day1 .hero-card-day { color: var(--day1); }
+    .hero-card.day2 .hero-card-day { color: var(--day2); }
+
+    .hero-card-title {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .hero-card-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .drop-hint {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      padding: 10px 18px;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .drop-hint:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Report view ── */
+    #report-view {
+      display: none;
+      padding: 60px 20px 80px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    #report-view.active { display: block; }
+
+    .report-header {
+      margin-bottom: 48px;
+    }
+
+    .report-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .report-path {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .coverage-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .coverage-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      width: 60px;
+      flex-shrink: 0;
+    }
+
+    .coverage-label.day0 { color: var(--day0); }
+    .coverage-label.day1 { color: var(--day1); }
+    .coverage-label.day2 { color: var(--day2); }
+
+    .coverage-bar-wrap {
+      flex: 1;
+      height: 8px;
+      background: var(--bg3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .coverage-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .coverage-bar-fill.day0 { background: var(--day0); }
+    .coverage-bar-fill.day1 { background: var(--day1); }
+    .coverage-bar-fill.day2 { background: var(--day2); }
+
+    .coverage-count {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      width: 80px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .file-cards { display: grid; gap: 12px; }
+
+    .file-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .file-score-ring {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .file-score-ring.high {
+      background: rgba(68,255,136,0.1);
+      border: 2px solid var(--good);
+      color: var(--good);
+    }
+    .file-score-ring.mid {
+      background: rgba(245,255,64,0.08);
+      border: 2px solid var(--accent);
+      color: var(--accent);
+    }
+    .file-score-ring.low {
+      background: rgba(255,68,68,0.08);
+      border: 2px solid var(--bad);
+      color: var(--bad);
+    }
+
+    .file-info { flex: 1; }
+
+    .file-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .file-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .rec-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .rec-item {
+      display: flex;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted2);
+    }
+
+    .rec-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      padding-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .section { margin-bottom: 44px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .card { padding: 32px 24px 28px; }
+      header { padding: 12px 16px; }
+      .blog-link { display: none; }
+      .hero-title { letter-spacing: -0.02em; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Drop overlay -->
+  <div id="drop-zone">
+    <p>DROP audit.json HERE</p>
+    <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">Generated by: npx doc-audit ./docs --json > audit.json</span>
+  </div>
+
+  <header>
+    <a class="logo" href="#" onclick="resetToHero(); return false;">doc-audit</a>
+    <div class="header-right">
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
+      <div class="toggle-group" id="mode-toggle">
+        <button class="toggle-btn active" data-mode="human" onclick="setMode('human')">Human</button>
+        <button class="toggle-btn" data-mode="agent" onclick="setMode('agent')">Agent</button>
+      </div>
+      <a
+        class="blog-link"
+        href="https://dev.to/daniellewashington/documentation-is-a-decision-system-not-a-knowledge-base-4139"
+        target="_blank"
+        rel="noopener"
+      >Read the post ↗</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section id="hero">
+      <p class="hero-eyebrow">Documentation Framework</p>
+      <h1 class="hero-title">What are you<br>trying to <em>do</em>?</h1>
+      <p class="hero-sub">
+        Documentation that answers this question is a decision system.<br>
+        Documentation that doesn't — isn't.
+      </p>
+
+      <div class="hero-cards">
+        <button class="hero-card day0" onclick="startBranch('day0')">
+          <span class="hero-card-day">Day 0</span>
+          <span class="hero-card-title">Evaluate if this is right for me</span>
+          <span class="hero-card-sub">Pre-Commitment</span>
+        </button>
+        <button class="hero-card day1" onclick="startBranch('day1')">
+          <span class="hero-card-day">Day 1</span>
+          <span class="hero-card-title">Get up and running fast</span>
+          <span class="hero-card-sub">Getting Started</span>
+        </button>
+        <button class="hero-card day2" onclick="startBranch('day2')">
+          <span class="hero-card-day">Day 2</span>
+          <span class="hero-card-title">Figure out why it broke</span>
+          <span class="hero-card-sub">Production</span>
+        </button>
+      </div>
+
+      <label class="drop-hint" for="json-upload">
+        Or drop audit.json to view a report ↓
+        <input id="json-upload" type="file" accept=".json" style="display:none" onchange="loadJSON(this.files[0])" />
+      </label>
+    </section>
+
+    <!-- Decision tree view -->
+    <section id="tree-view" style="display:none">
+      <div class="breadcrumb" id="breadcrumb"></div>
+      <div id="card-mount"></div>
+    </section>
+
+    <!-- Report view -->
+    <div id="report-view">
+      <div class="report-header">
+        <h2 class="report-title">Audit Report</h2>
+        <p class="report-path" id="report-path"></p>
+      </div>
+
+      <div class="section">
+        <p class="section-label">Phase Coverage</p>
+        <div id="coverage-section"></div>
+      </div>
+
+      <div class="section">
+        <p class="section-label">Decision Quality</p>
+        <div class="file-cards" id="files-section"></div>
+      </div>
+
+      <div class="section">
+        <p class="section-label">Recommendations</p>
+        <div class="rec-list" id="recs-section"></div>
+      </div>
+
+      <div style="margin-top:32px">
+        <button class="btn btn-ghost" onclick="resetToHero()">← Back to demo</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ── Theme ────────────────────────────────────────────────────
+    function initTheme() {
+      const saved = localStorage.getItem('doc-audit-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved ?? (prefersDark ? 'dark' : 'light');
+      applyTheme(theme);
+    }
+
+    function applyTheme(theme) {
+      const btn = document.getElementById('theme-btn');
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        btn.textContent = '🌙';
+        btn.title = 'Switch to dark mode';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        btn.textContent = '☀️';
+        btn.title = 'Switch to light mode';
+      }
+      localStorage.setItem('doc-audit-theme', theme);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    }
+
+    initTheme();
+
+    // ── Mode toggle ──────────────────────────────────────────────
+    let currentMode = 'human';
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.body.classList.toggle('agent-mode', mode === 'agent');
+      document.querySelectorAll('.toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+    }
+
+    // ── Tree data ─────────────────────────────────────────────────
+    const TREE = {
+      'day0-q1': {
+        phase: 'day0',
+        phaseLabel: 'Day 0 — Pre-Commitment',
+        question: "What's your biggest uncertainty?",
+        choices: [
+          { label: "Does it actually solve my problem?", sub: "Fit assessment", next: 'day0-a1' },
+          { label: "How does it compare to alternatives?", sub: "Decision between options", next: 'day0-a2' },
+          { label: "What's the real cost to adopt this?", sub: "Risk & investment", next: 'day0-a3' },
+        ]
+      },
+      'day0-a1': {
+        phase: 'day0',
+        phaseLabel: 'Day 0 — Pre-Commitment',
+        terminal: true,
+        question: "Does it solve my problem?",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc that navigates your decision:',
+          body: `<span class="if-then">If you're managing distributed config at scale</span> — this is built for you. <span class="if-then">If you're building a prototype or have fewer than 10 services</span> — it's overkill; use environment variables instead. The core job it does: centralizes runtime configuration with audit trails.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'Our product supports YAML, JSON, TOML, and HCL configuration formats. It integrates with Kubernetes, Nomad, ECS, and 40+ other platforms. Features include: versioning, rollbacks, ACLs, audit logging, health checks, dynamic secrets, and service mesh support…'
+        },
+        annotation: '"Users lack confidence in their choices, not intelligence." Give them a clear fit assessment — not a feature catalog.'
+      },
+      'day0-a2': {
+        phase: 'day0',
+        phaseLabel: 'Day 0 — Pre-Commitment',
+        terminal: true,
+        question: "How does it compare to alternatives?",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc that navigates your decision:',
+          body: `<span class="if-then">If you're already on HashiCorp tools</span> — Vault Secrets is the natural fit. <span class="if-then">If your team lives in AWS</span> — Secrets Manager has less operational overhead. <span class="if-then">If you need open-source and self-hosted</span> — this is the strongest option. The tradeoff: more control, more setup.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'See our comprehensive comparison matrix below. We evaluated 12 vendors across 47 dimensions including performance, compliance, integration depth, roadmap, community activity, SLA tiers, support response time, pricing models…'
+        },
+        annotation: 'Visible tradeoffs build confidence. When docs hide the tradeoffs, readers assume the worst.'
+      },
+      'day0-a3': {
+        phase: 'day0',
+        phaseLabel: 'Day 0 — Pre-Commitment',
+        terminal: true,
+        question: "What's the real cost to adopt this?",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc that navigates your decision:',
+          body: `Realistically: <span class="if-then">if you have one engineer familiar with Kubernetes</span>, you're looking at 2–3 days to production. <span class="if-then">If you're starting from scratch</span>, budget a week. The highest-friction step is secret migration — not the install. Plan for that first.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'Installation requires Helm 3.0+, Kubernetes 1.19+, and a running etcd cluster. Refer to the prerequisites section. For HA deployments, consult the architecture guide. Enterprise features require a license key (contact sales)…'
+        },
+        annotation: '"Surface consequences before users commit to paths." The cost of switching is always higher than the cost of reading one honest paragraph.'
+      },
+
+      'day1-q1': {
+        phase: 'day1',
+        phaseLabel: 'Day 1 — Getting Started',
+        question: "What's your starting point?",
+        choices: [
+          { label: "Starting completely from scratch", sub: "No existing setup", next: 'day1-a1' },
+          { label: "Migrating from another tool", sub: "Bring existing config", next: 'day1-a2' },
+          { label: "I have a specific, narrow use case", sub: "Just one thing to solve", next: 'day1-a3' },
+        ]
+      },
+      'day1-a1': {
+        phase: 'day1',
+        phaseLabel: 'Day 1 — Getting Started',
+        terminal: true,
+        question: "Starting from scratch",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc that gets you moving:',
+          body: `<strong>Do this first:</strong> run <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px">brew install our-tool &amp;&amp; our-tool init</code>. You'll have a working local instance in 90 seconds. <span class="if-then">Skip the cluster setup for now</span> — you don't need it until you have 3+ services. Come back to the HA guide when you do.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'Welcome to the setup guide. Before you begin, choose your deployment model: single-node, multi-region active-active, multi-region active-passive, or Kubernetes operator. Each has different prerequisites. For single-node: see section 2.1. For multi-region…'
+        },
+        annotation: '"Provide clear defaults that work for most situations." The right first step is usually one step, not fourteen options.'
+      },
+      'day1-a2': {
+        phase: 'day1',
+        phaseLabel: 'Day 1 — Getting Started',
+        terminal: true,
+        question: "Migrating from another tool",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc built for your exact situation:',
+          body: `<span class="if-then">If you're coming from Consul</span>: your KV structure maps 1:1. Use <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px">migrate-from-consul</code> — it handles the namespace conversion. <span class="if-then">If you're coming from dotenv files</span>: bulk import with the CLI, then rotate keys. Do not skip the rotation step.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'The migration process involves backing up your existing configuration, installing the new tool, configuring the connection settings, importing data using the provided import utilities, and validating the import. Refer to the full migration documentation…'
+        },
+        annotation: 'Migration docs fail when they\'re written generically. The reader has a very specific context. Meet them in it.'
+      },
+      'day1-a3': {
+        phase: 'day1',
+        phaseLabel: 'Day 1 — Getting Started',
+        terminal: true,
+        question: "Specific, narrow use case",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc that respects your scope:',
+          body: `<span class="if-then">If you only need dynamic feature flags</span>: skip sections 2–4 entirely. Jump to the Feature Flags quickstart. You'll need just 3 config lines and won't need to run the agent. This path takes 15 minutes.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'To use feature flags, first complete the core installation (see section 1), configure TLS (section 2), set up the agent (section 3), configure ACLs (section 4), then proceed to the feature flags module (section 5.7)…'
+        },
+        annotation: 'When you force a narrow use case through a wide funnel, you lose users at every unnecessary step.'
+      },
+
+      'day2-q1': {
+        phase: 'day2',
+        phaseLabel: 'Day 2 — Production',
+        question: "What's the symptom?",
+        choices: [
+          { label: "Something is running slow", sub: "Latency or throughput degraded", next: 'day2-a1' },
+          { label: "Something is misconfigured", sub: "Behavior is wrong, not broken", next: 'day2-a2' },
+          { label: "Something isn't connecting", sub: "Network or auth failure", next: 'day2-a3' },
+        ]
+      },
+      'day2-a1': {
+        phase: 'day2',
+        phaseLabel: 'Day 2 — Production',
+        terminal: true,
+        question: "Something is running slow",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc that triages before diving:',
+          body: `Check in this order: <span class="if-then">if p99 latency is above 200ms</span> — check your watch interval, it's probably too short. <span class="if-then">If CPU is normal but memory is high</span> — you have a cache config issue, see Cache Tuning. <span class="if-then">If both are fine and it's still slow</span> — the bottleneck is network topology, not the tool itself.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'Performance tuning for production deployments involves many variables. See the Performance Guide (22 pages) for information on cache configuration, watch intervals, raft consensus timeouts, gRPC connection pooling, TLS overhead, and disk I/O patterns…'
+        },
+        annotation: 'An agent debugging at 2am cannot ask follow-up questions. Neither can your on-call engineer. The doc must triage for them.'
+      },
+      'day2-a2': {
+        phase: 'day2',
+        phaseLabel: 'Day 2 — Production',
+        terminal: true,
+        question: "Something is misconfigured",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc that validates, not just describes:',
+          body: `Run <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px">our-tool validate --config ./config.hcl</code>. <span class="if-then">If it says "unknown field"</span> — you're using a deprecated key, see the migration guide. <span class="if-then">If it passes but behavior is still wrong</span> — check environment variable precedence; they override file config silently.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'Configuration options are documented in the Configuration Reference (section 8). All configuration values can be set via config file, environment variables, or CLI flags. For precedence rules, see the Configuration Precedence Matrix in Appendix C…'
+        },
+        annotation: '"Write for the moment before the question forms." Misconfiguration is always specific. Generic reference docs don\'t resolve incidents.'
+      },
+      'day2-a3': {
+        phase: 'day2',
+        phaseLabel: 'Day 2 — Production',
+        terminal: true,
+        question: "Something isn't connecting",
+        good: {
+          label: 'Decision system answer',
+          title: 'A doc that isolates the failure layer:',
+          body: `<span class="if-then">If you get "connection refused"</span> — the agent isn't running. Check <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px">systemctl status our-tool</code>. <span class="if-then">If you get "permission denied"</span> — your token doesn't have the right policy. Run <code style="font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px">our-tool token check &lt;token&gt;</code> to see what it can access. <span class="if-then">If you get a TLS error</span> — certificate mismatch; see the TLS troubleshooting guide.`,
+        },
+        bad: {
+          title: 'A knowledge base gives you this instead:',
+          body: 'Connectivity issues can have many causes including network configuration, TLS settings, authentication tokens, ACL policies, firewall rules, and DNS resolution. For network troubleshooting, see the Network Guide. For TLS, see the TLS Guide…'
+        },
+        annotation: 'Every error message is a decision point. Map error → diagnosis → action. That\'s the decision system in its purest form.'
+      },
+    };
+
+    // ── State ─────────────────────────────────────────────────────
+    let history = [];
+
+    // ── Navigation ───────────────────────────────────────────────
+    function startBranch(phase) {
+      history = [];
+      showNode(phase + '-q1');
+      document.getElementById('hero').style.display = 'none';
+      document.getElementById('tree-view').style.display = 'flex';
+    }
+
+    function showNode(nodeId) {
+      const node = TREE[nodeId];
+      if (!node) return;
+
+      history.push({ nodeId, label: node.question });
+      renderBreadcrumb();
+
+      const mount = document.getElementById('card-mount');
+      mount.innerHTML = '';
+
+      const card = document.createElement('div');
+      card.className = 'card' + (node.terminal ? ' terminal-card' : '');
+
+      if (node.phaseLabel) {
+        const tag = document.createElement('div');
+        tag.className = `phase-tag ${node.phase}`;
+        tag.textContent = node.phaseLabel;
+        card.appendChild(tag);
+      }
+
+      const q = document.createElement('h2');
+      q.className = 'card-question';
+      q.textContent = node.question;
+      card.appendChild(q);
+
+      if (node.terminal) {
+        renderTerminalCard(card, node);
+      } else {
+        renderChoiceCard(card, node);
+      }
+
+      mount.appendChild(card);
+      window.scrollTo({ top: 65, behavior: 'smooth' });
+    }
+
+    function renderChoiceCard(card, node) {
+      const choices = document.createElement('div');
+      choices.className = 'choices';
+
+      node.choices.forEach((c, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.innerHTML = `
+          <span class="choice-num">${String.fromCharCode(65 + i)}</span>
+          <span class="choice-text">
+            <span class="choice-label">${c.label}</span>
+            ${c.sub ? `<span class="choice-sub">${c.sub}</span>` : ''}
+          </span>
+        `;
+        btn.addEventListener('click', () => showNode(c.next));
+        choices.appendChild(btn);
+      });
+
+      card.appendChild(choices);
+      addBackButton(card);
+    }
+
+    function renderTerminalCard(card, node) {
+      // Agent note
+      const agentNote = document.createElement('div');
+      agentNote.className = 'agent-note';
+      agentNote.textContent = 'Agent mode: narrative collapsed — If/then decision points highlighted';
+      card.appendChild(agentNote);
+
+      // Good panel
+      const goodPanel = document.createElement('div');
+      goodPanel.className = 'doc-panel good';
+      goodPanel.innerHTML = `
+        <div class="doc-panel-label">
+          <span>✓</span>
+          <span>${node.good.label ?? 'Decision system'}</span>
+        </div>
+        <div class="doc-panel-title narrative">${node.good.title}</div>
+        <div class="doc-panel-body">${node.good.body}</div>
+      `;
+      card.appendChild(goodPanel);
+
+      // Bad panel toggle
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'bad-toggle-btn';
+      toggleBtn.innerHTML = `<span>▶</span><span>Show me the knowledge base version</span>`;
+
+      const badWrap = document.createElement('div');
+      badWrap.className = 'bad-panel-wrap';
+      const badPanel = document.createElement('div');
+      badPanel.className = 'doc-panel bad';
+      badPanel.innerHTML = `
+        <div class="doc-panel-label">
+          <span>✗</span>
+          <span>Knowledge base approach</span>
+        </div>
+        <div class="doc-panel-title">${node.bad.title}</div>
+        <div class="doc-panel-body">${node.bad.body}</div>
+      `;
+      badWrap.appendChild(badPanel);
+
+      toggleBtn.addEventListener('click', () => {
+        const isOpen = badWrap.classList.toggle('open');
+        toggleBtn.classList.toggle('open', isOpen);
+        toggleBtn.querySelector('span').textContent = isOpen ? '▼' : '▶';
+      });
+
+      card.appendChild(toggleBtn);
+      card.appendChild(badWrap);
+
+      // Annotation
+      const ann = document.createElement('div');
+      ann.className = 'annotation';
+      ann.innerHTML = `
+        <div class="annotation-label">Framework note</div>
+        <div class="annotation-body">${node.annotation}</div>
+      `;
+      card.appendChild(ann);
+
+      // Actions
+      const actions = document.createElement('div');
+      actions.className = 'card-actions';
+
+      const restartBtn = document.createElement('button');
+      restartBtn.className = 'btn btn-primary';
+      restartBtn.textContent = 'Start over';
+      restartBtn.addEventListener('click', resetToHero);
+
+      const backBtn = document.createElement('button');
+      backBtn.className = 'btn btn-ghost';
+      backBtn.textContent = '← Back';
+      backBtn.addEventListener('click', goBack);
+
+      actions.appendChild(restartBtn);
+      actions.appendChild(backBtn);
+      card.appendChild(actions);
+    }
+
+    function addBackButton(card) {
+      const actions = document.createElement('div');
+      actions.className = 'card-actions';
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-ghost';
+      btn.textContent = '← Back';
+      btn.addEventListener('click', goBack);
+      actions.appendChild(btn);
+      card.appendChild(actions);
+    }
+
+    function goBack() {
+      if (history.length <= 1) {
+        resetToHero();
+        return;
+      }
+      history.pop();
+      history.pop(); // pop current too, showNode will re-push
+      const prev = history[history.length - 1];
+      if (prev) {
+        history.pop();
+        showNode(prev.nodeId);
+      } else {
+        resetToHero();
+      }
+    }
+
+    function resetToHero() {
+      history = [];
+      document.getElementById('hero').style.display = 'flex';
+      document.getElementById('tree-view').style.display = 'none';
+      document.getElementById('report-view').classList.remove('active');
+      document.getElementById('card-mount').innerHTML = '';
+      renderBreadcrumb();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Breadcrumb ───────────────────────────────────────────────
+    function renderBreadcrumb() {
+      const bc = document.getElementById('breadcrumb');
+      bc.innerHTML = '';
+      history.forEach((item, i) => {
+        const span = document.createElement('span');
+        span.className = 'crumb' + (i === history.length - 1 ? ' current' : '');
+        span.textContent = item.label.length > 30 ? item.label.slice(0, 28) + '…' : item.label;
+        bc.appendChild(span);
+        if (i < history.length - 1) {
+          const sep = document.createElement('span');
+          sep.className = 'crumb-sep';
+          sep.textContent = '→';
+          bc.appendChild(sep);
+        }
+      });
+    }
+
+    // ── JSON report viewer ────────────────────────────────────────
+    function loadJSON(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          renderReport(data);
+        } catch {
+          alert('Invalid JSON file');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function renderReport(data) {
+      document.getElementById('hero').style.display = 'none';
+      document.getElementById('tree-view').style.display = 'none';
+      document.getElementById('report-view').classList.add('active');
+
+      document.getElementById('report-path').textContent = data.docsPath ?? '';
+
+      // Coverage
+      const total = data.summary?.total ?? 1;
+      const counts = data.summary?.phaseCounts ?? {};
+      const phases = [
+        { key: 'day0', label: 'Day 0' },
+        { key: 'day1', label: 'Day 1' },
+        { key: 'day2', label: 'Day 2' },
+      ];
+      const cov = document.getElementById('coverage-section');
+      cov.innerHTML = '';
+      phases.forEach(({ key, label }) => {
+        const count = counts[key] ?? 0;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        const row = document.createElement('div');
+        row.className = 'coverage-row';
+        row.innerHTML = `
+          <span class="coverage-label ${key}">${label}</span>
+          <div class="coverage-bar-wrap">
+            <div class="coverage-bar-fill ${key}" style="width:0%"></div>
+          </div>
+          <span class="coverage-count">${count} of ${total}</span>
+        `;
+        cov.appendChild(row);
+        setTimeout(() => {
+          row.querySelector('.coverage-bar-fill').style.width = pct + '%';
+        }, 100);
+      });
+
+      // Files
+      const filesEl = document.getElementById('files-section');
+      filesEl.innerHTML = '';
+      (data.files ?? []).filter(f => !f.skipped && !f.flaggedForDeletion).forEach(f => {
+        const score = f.qualityScore ?? 0;
+        const max = f.maxQualityScore ?? 8;
+        const tier = score >= 6 ? 'high' : score >= 3 ? 'mid' : 'low';
+        const label = score >= 6 ? 'Strong decision doc' : score >= 3 ? 'Partially decision-oriented' : 'Knowledge dump';
+        const phase = f.confirmedPhase ?? f.detectedPhase ?? 'unknown';
+        const phaseMap = { day0: 'Day 0', day1: 'Day 1', day2: 'Day 2', unknown: '?' };
+        const fc = document.createElement('div');
+        fc.className = 'file-card';
+        fc.innerHTML = `
+          <div class="file-score-ring ${tier}">${score}/${max}</div>
+          <div class="file-info">
+            <div class="file-name">${f.fileName}</div>
+            <div class="file-meta">${phaseMap[phase] ?? phase} · ${f.wordCount ?? '?'} words · ${label}</div>
+          </div>
+        `;
+        filesEl.appendChild(fc);
+      });
+
+      // Recommendations
+      const recsEl = document.getElementById('recs-section');
+      recsEl.innerHTML = '';
+      (data.recommendations ?? []).forEach((rec, i) => {
+        const item = document.createElement('div');
+        item.className = 'rec-item';
+        item.innerHTML = `<span class="rec-num">${i + 1}.</span><span>${rec}</span>`;
+        recsEl.appendChild(item);
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Drag and drop ────────────────────────────────────────────
+    const dropZone = document.getElementById('drop-zone');
+    let dragCounter = 0;
+
+    document.addEventListener('dragenter', e => {
+      if (e.dataTransfer.types.includes('Files')) {
+        dragCounter++;
+        dropZone.classList.add('active');
+      }
+    });
+
+    document.addEventListener('dragleave', () => {
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        dropZone.classList.remove('active');
+      }
+    });
+
+    document.addEventListener('dragover', e => e.preventDefault());
+
+    document.addEventListener('drop', e => {
+      e.preventDefault();
+      dragCounter = 0;
+      dropZone.classList.remove('active');
+      const file = e.dataTransfer.files[0];
+      if (file && file.name.endsWith('.json')) loadJSON(file);
+    });
+  </script>
+</body>
+</html>

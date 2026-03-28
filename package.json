@@ -1,0 +1,17 @@
+{
+  "name": "doc-audit",
+  "version": "1.0.0",
+  "description": "Audit your documentation against the Day 0/1/2 decision-system framework",
+  "type": "module",
+  "bin": {
+    "doc-audit": "./index.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "glob": "^10.3.10",
+    "inquirer": "^9.2.15"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
