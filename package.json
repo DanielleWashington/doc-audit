@@ -6,10 +6,18 @@
   "bin": {
     "doc-audit": "./index.js"
   },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
     "chalk": "^5.3.0",
     "glob": "^10.3.10",
-    "inquirer": "^9.2.15"
+    "inquirer": "^9.2.15",
+    "next": "^15",
+    "react": "^19",
+    "react-dom": "^19"
   },
   "engines": {
     "node": ">=18"
