@@ -8,7 +8,7 @@ Audit your documentation against the Day 0/1/2 decision-system framework.
 
 ## The Framework
 
-Most documentation fails not because something is missing, but because it answers the wrong question. We've built encyclopedias when people need guides. The Day 0/1/2 framework maps the decision landscape your users actually navigate.
+Most documentation fails not because something is missing, but because it answers th wrong question. We've built encyclopedias when people need guides. The Day 0/1/2 framework maps the decision landscape your users actually navigate.
 
 | Phase | Reader's question | What they need |
 |-------|-------------------|----------------|
@@ -18,7 +18,7 @@ Most documentation fails not because something is missing, but because it answer
 
 A healthy docs suite covers all three. Most repos over-index on Day 1 and leave Day 0 and Day 2 nearly empty.
 
-> Built on the framework from [Documentation is a Decision System, Not a Knowledge Base](https://dev.to/daniellewashington/documentation-is-a-decision-system-not-a-knowledge-base-4139) and [Humans Need Narrative, Agents Need Decisions, Your Docs Need Both](https://dev.to/daniellewashington/humans-need-narrative-agents-need-decisions-your-docs-need-both-2ni8) by Danielle Washington.
+> Built on the framework from [Documentation is a Decision System, Not a Knowledge Base](https://dev.to/daniellewashington/documentation-is-a-decision-system-not-a-knowledge-base-4139) and [The Documentation Framework We Need Doesn't Exist Yet](https://dev.to/daniellewashington/humans-need-narrative-agents-need-decisions-your-docs-need-both-2ni8) by Danielle Washington.
 
 ---
 
