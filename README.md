@@ -1,45 +1,38 @@
 # doc-audit
 
-**Audit your documentation against the Day 0/1/2 decision-system framework.**
+Audit your documentation against the Day 0/1/2 decision-system framework.
 
-`doc-audit` is a CLI tool that scans your markdown docs, classifies each file by decision phase, scores how well they guide the reader toward action, and surfaces specific recommendations for improvement — all in your terminal.
+`doc-audit` scans your markdown files, classifies each one by decision phase, scores how well it guides the reader toward action, and tells you exactly what to fix. It runs in your terminal and takes about two minutes per docs folder.
 
 ---
 
 ## The Framework
 
-Most documentation fails not because it lacks information, but because it doesn't help the reader make a decision. `doc-audit` is built around the Day 0/1/2 framework:
+Most documentation fails not because something is missing, but because it answers the wrong question. We've built encyclopedias when people need guides. The Day 0/1/2 framework maps the decision landscape your users actually navigate.
 
-| Phase | Reader's Question | Doc Purpose |
-|-------|-------------------|-------------|
-| **Day 0 — Pre-Commitment** | "Should I use this at all?" | Evaluation, comparison, trade-offs |
-| **Day 1 — Getting Started** | "How do I get it working?" | Quickstart, installation, first tutorial |
-| **Day 2 — Production** | "Something broke. What now?" | Troubleshooting, scaling, incident guides |
+| Phase | Reader's question | What they need |
+|-------|-------------------|----------------|
+| **Day 0, Pre-Commitment** | Should I use this at all? | Evaluation, comparison, tradeoffs |
+| **Day 1, Getting Started** | How do I get it working? | Quickstart, installation, first steps |
+| **Day 2, Production** | Something broke. What now? | Troubleshooting, scaling, incident guides |
 
-A healthy documentation suite covers all three phases. Most repos over-index on Day 1 and leave Day 0 and Day 2 nearly empty.
+A healthy docs suite covers all three. Most repos over-index on Day 1 and leave Day 0 and Day 2 nearly empty.
 
-> Originally articulated in [Documentation is a Decision System, Not a Knowledge Base](https://dev.to/daniellewashington/documentation-is-a-decision-system-not-a-knowledge-base-4139) and [Humans Need Narrative, Agents Need Decisions — Your Docs Need Both](https://dev.to/daniellewashington/humans-need-narrative-agents-need-decisions-your-docs-need-both-2ni8) by Danielle Washington.
+> Built on the framework from [Documentation is a Decision System, Not a Knowledge Base](https://dev.to/daniellewashington/documentation-is-a-decision-system-not-a-knowledge-base-4139) and [Humans Need Narrative, Agents Need Decisions, Your Docs Need Both](https://dev.to/daniellewashington/humans-need-narrative-agents-need-decisions-your-docs-need-both-2ni8) by Danielle Washington.
 
 ---
 
 ## Installation
 
-**Requirements:** Node.js 18 or higher.
+Node.js 18 or higher required.
 
 ```bash
-# Clone the repo
 git clone <repo-url>
 cd doc-audit
-
-# Install dependencies
 npm install
 
-# Run directly
-node index.js ./your-docs-folder
-
-# Or link globally to use the `doc-audit` command anywhere
+# Link globally to use doc-audit anywhere
 npm link
-doc-audit ./your-docs-folder
 ```
 
 ---
@@ -48,95 +41,88 @@ doc-audit ./your-docs-folder
 
 ```
 doc-audit <path>                       Interactive audit of all .md files
-doc-audit <path> --auto                Auto-classify only, skip the interview
-doc-audit <path> --json                Output raw JSON (pipe to a file)
+doc-audit <path> --auto                Auto-classify only, no interview
+doc-audit <path> --json                Output raw JSON
 doc-audit <path> --output <file>       Write a markdown report to a file
 doc-audit --help                       Show usage
 ```
 
-### Interactive Mode (default)
+### Interactive mode (default)
 
 ```bash
 doc-audit ./docs
 ```
 
-For each `.md` file found, `doc-audit` shows its auto-detected phase and quality score, then walks you through a short interview:
+For each `.md` file found, `doc-audit` shows the auto-detected phase and quality score, then asks four questions: whether to audit, skip, or flag the file for deletion; whether the detected phase is correct; whether the doc helps the reader make a specific decision; and whether it includes explicit if/then guidance and a clear next step.
 
-1. **Action** — audit it, skip it, or flag it for deletion
-2. **Phase confirmation** — verify or correct the detected Day 0/1/2 classification
-3. **Decision quality** — does it recommend a path, present options, or just describe?
-4. **If/then guidance** — does it include explicit `If X → do Y` callouts?
-5. **Next step** — does it end by pointing the reader somewhere?
+After all files are processed, a summary report prints with phase coverage, per-file quality scores, and prioritized recommendations.
 
-After all files are processed, a summary report prints to the terminal with phase coverage, per-file quality scores, and prioritized recommendations.
-
-### Auto Mode
+### Auto mode
 
 ```bash
 doc-audit ./docs --auto
 ```
 
-Skips the interactive interview. Runs the static analyzer on every file and prints the report immediately. Useful for CI checks or a quick first pass.
+Skips the interview entirely. Runs the static analyzer on every file and prints the report. Good for CI or a fast first pass.
 
-### JSON Export
+### JSON export
 
 ```bash
 doc-audit ./docs --json > audit.json
 ```
 
-Outputs a structured JSON object with the full audit summary, per-file results, and recommendations. The JSON schema is described below.
+Outputs a structured JSON object with the full summary, per-file results, and recommendations. Pipe it into whatever you want.
 
-### Markdown Export
+### Markdown export
 
 ```bash
 doc-audit ./docs --output report.md
 ```
 
-Writes a formatted markdown report to the specified file.
+Writes a formatted markdown report to disk.
 
 ---
 
-## How Classification Works
+## How classification works
 
-`doc-audit` reads each `.md` file and scores it against three signal dictionaries:
+`doc-audit` reads each file and scores it against three signal dictionaries.
 
-**Day 0 signals** (evaluation keywords):
-`overview`, `why use`, `what is`, `compare`, `vs`, `should i`, `when to use`, `use case`, `is this right`, `evaluation`, `choosing`, `alternatives`, `not for`, `who is this for`
+**Day 0 signals:** `overview`, `why use`, `what is`, `compare`, `vs`, `should i`, `when to use`, `use case`, `is this right`, `evaluation`, `choosing`, `alternatives`, `not for`, `who is this for`
 
-**Day 1 signals** (onboarding keywords):
-`install`, `setup`, `quickstart`, `tutorial`, `step 1`, `getting started`, `first time`, `how to`, `walkthrough`, `your first`, `prerequisites`, `requirements`
+**Day 1 signals:** `install`, `setup`, `quickstart`, `tutorial`, `step 1`, `getting started`, `first time`, `how to`, `walkthrough`, `your first`, `prerequisites`, `requirements`
 
-**Day 2 signals** (operational keywords):
-`troubleshoot`, `debug`, `error`, `production`, `scale`, `monitor`, `faq`, `fix`, `broken`, `failing`, `issues`, `problems`, `performance`, `incident`, `rollback`, `outage`
+**Day 2 signals:** `troubleshoot`, `debug`, `error`, `production`, `scale`, `monitor`, `faq`, `fix`, `broken`, `failing`, `issues`, `problems`, `performance`, `incident`, `rollback`, `outage`
 
 The phase with the most signal matches wins. In interactive mode, you can override the detected classification.
 
 ---
 
-## Decision Quality Score
+## Decision quality score
 
-Each file receives a quality score out of **8 points** based on structural signals:
+Each file gets a score out of 8 based on structural signals.
 
 | Signal | Points | What it checks |
 |--------|--------|----------------|
 | If/then guidance | 2 | Regex for `if ... then/→/do/try/run` patterns |
-| Trade-off language | 2 | "when not to", "caveat", "⚠", "limitation", "not recommended" |
-| Ordered steps | 1 | Numbered list (`1.`) present |
+| Tradeoff language | 2 | "when not to", "caveat", "⚠", "limitation", "not recommended" |
+| Ordered steps | 1 | Numbered list present |
 | Learning outcome | 1 | "by the end", "you will learn", "after completing" |
 | Next steps | 1 | "next steps", "proceed to", "go to section" |
 | Focused length | 1 | Under 1,000 words |
 
+The if/then and tradeoff signals carry double weight because they're the hardest to fake. A doc can have ordered steps and a next steps section and still be a knowledge dump. Explicit "if your use case is X, do Y" language is what separates a decision doc from a reference doc.
+
 **Score interpretation:**
 
-- `6–8` — Strong decision doc ✓
-- `3–5` — Partially decision-oriented ⚠
-- `0–2` — Knowledge dump ✗
+- `6–8`, Strong decision doc ✓
+- `3–5`, Partially decision-oriented ⚠
+- `0–2`, Knowledge dump ✗
 
 ---
 
 ## Output
 
-### Terminal Report
+### Terminal report
 
 ```
 ╔═══════════════════════════════════════════════════════╗
@@ -159,7 +145,7 @@ RECOMMENDATIONS
   2. api-reference.md — low decision quality. Add "If X → do Y" callouts...
 ```
 
-### JSON Schema
+### JSON schema
 
 ```json
 {
@@ -190,14 +176,14 @@ RECOMMENDATIONS
 
 ---
 
-## Project Structure
+## Project structure
 
 ```
 doc-audit/
-├── index.js        Entry point. CLI argument parsing, file discovery, orchestration
-├── analyze.js      Static file analyzer. Signal matching, quality scoring
-├── tree.js         Interactive interview flow (uses inquirer)
-├── report.js       Terminal printer, markdown exporter, JSON exporter
+├── index.js        Entry point, CLI args, file discovery, orchestration
+├── analyze.js      Static analyzer, signal matching, quality scoring
+├── tree.js         Interactive interview flow (inquirer)
+├── report.js       Terminal output, markdown export, JSON export
 ├── package.json
 └── test-docs/      Sample docs for local testing
     ├── overview.md
@@ -206,15 +192,13 @@ doc-audit/
     └── api-reference.md
 ```
 
-### Module Responsibilities
+**`index.js`** parses `process.argv`, resolves the target path, discovers `.md` files via `glob`, and routes to either `analyzeFile` (auto mode) or `interviewFile` (interactive mode), then sends output to `printReport`, `exportMarkdown`, or `exportJSON`.
 
-**`index.js`** — Parses `process.argv`, resolves the target path, discovers `.md` files via `glob`, fans out to either `analyzeFile` (auto mode) or `interviewFile` (interactive mode), then routes output to `printReport`, `exportMarkdown`, or `exportJSON`.
+**`analyze.js`** is pure functions. `analyzeFile(filePath)` reads a file, runs signal matching, calculates the quality score, and returns a plain analysis object. `phaseLabel(phase)` maps phase keys to human-readable strings.
 
-**`analyze.js`** — Pure functions. `analyzeFile(filePath)` reads a file, runs signal matching, calculates the quality score, and returns a plain analysis object. `phaseLabel(phase)` maps internal phase keys to human-readable strings.
+**`tree.js`** is the async interactive flow using `inquirer`. `interviewFile(analysis)` takes an analysis object, shows context, prompts four questions, and returns an enriched result with confirmed phase and quality overrides.
 
-**`tree.js`** — Async interactive flow using `inquirer`. `interviewFile(analysis)` takes an analysis object, displays context, prompts the user with four questions, and returns an enriched result object with confirmed phase and quality overrides.
-
-**`report.js`** — Three export functions: `printReport` (colored terminal output via chalk), `exportMarkdown` (returns a markdown string), `exportJSON` (returns a JSON string). Also contains `buildRecommendations`, which inspects the full results array and surfaces up to 8 prioritized action items.
+**`report.js`** has three export functions: `printReport` for colored terminal output via chalk, `exportMarkdown` returning a markdown string, and `exportJSON` returning a JSON string. `buildRecommendations` inspects the full results array and surfaces up to 8 prioritized action items.
 
 ---
 
@@ -232,20 +216,20 @@ All three are ESM-compatible. The project uses `"type": "module"` in `package.js
 
 ## Web UI
 
-A standalone browser-based version of the auditor lives in `web/index.html`. Open it directly in any browser — no server required. It supports drag-and-drop of markdown files and renders the phase classification and quality score in real time.
+A standalone browser-based version lives in `docs/index.html`. Open it directly in any browser, no server required. Drag and drop markdown files and it classifies and scores them in real time.
 
 ---
 
-## Running Against the Test Docs
+## Try it on the test docs
 
 ```bash
-# Interactive audit of the bundled sample docs
+# Interactive audit
 node index.js ./test-docs
 
-# Auto mode — no prompts
+# Auto mode
 node index.js ./test-docs --auto
 
-# Export JSON
+# JSON export
 node index.js ./test-docs --json > sample-audit.json
 ```
 
@@ -253,7 +237,4 @@ node index.js ./test-docs --json > sample-audit.json
 
 ## Credits
 
-Built on the documentation framework developed by [Danielle Washington](https://dev.to/daniellewashington):
-
-- [Documentation is a Decision System, Not a Knowledge Base](https://dev.to/daniellewashington/documentation-is-a-decision-system-not-a-knowledge-base-4139)
-- [Humans Need Narrative, Agents Need Decisions — Your Docs Need Both](https://dev.to/daniellewashington/humans-need-narrative-agents-need-decisions-your-docs-need-both-2ni8)
+Built on the documentation framework by [Danielle Washington](https://dev.to/daniellewashington).
