@@ -757,6 +757,346 @@ main { padding-top: 42px; }
 
 .section { margin-bottom: 44px; }
 
+/* ── Intent confirmation ── */
+.ic-wrap {
+  max-width: 640px;
+}
+
+.ic-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.ic-detection {
+  padding: 28px 0 24px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.ic-detected-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.ic-detected-phase {
+  font-family: var(--serif);
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.ic-detected-phase strong { color: var(--accent); }
+
+.ic-detected-desc {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.ic-confidence {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 12px;
+  font-style: italic;
+}
+
+.ic-ambiguity {
+  border-left: 3px solid var(--accent);
+  padding: 14px 18px;
+  margin-bottom: 24px;
+}
+
+.ic-ambiguity-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.ic-ambiguity-body {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.ic-question-block {
+  padding: 28px 0 0;
+}
+
+.ic-question {
+  font-family: var(--serif);
+  font-size: clamp(18px, 2.5vw, 24px);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 28px;
+}
+
+.ic-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ic-btn-yes {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 14px 24px;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.15s;
+  align-self: flex-start;
+}
+
+.ic-btn-yes:hover { opacity: 0.88; }
+
+.ic-or {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ic-day-btns {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  width: fit-content;
+}
+
+.ic-day-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+  transition: background 0.12s;
+}
+
+.ic-day-btn:last-child { border-right: none; }
+.ic-day-btn:hover { background: var(--bg2); }
+.ic-day-btn:hover .ic-day-name { color: var(--accent); }
+
+.ic-day-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  transition: color 0.12s;
+}
+
+.ic-day-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Audit report ── */
+.ar-wrap {
+  max-width: 680px;
+}
+
+.ar-header {
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.ar-source {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  word-break: break-all;
+  letter-spacing: 0.04em;
+}
+
+.ar-title {
+  font-family: var(--serif);
+  font-size: clamp(22px, 3.5vw, 36px);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.ar-phase { font-style: italic; }
+.ar-phase.phase-day0 { color: var(--day0); }
+.ar-phase.phase-day1 { color: var(--accent); }
+.ar-phase.phase-day2 { color: var(--day2); }
+
+.ar-title-sub {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.ar-ambiguity {
+  border-left: 3px solid var(--accent);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+}
+
+.ar-ambiguity-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.ar-ambiguity-body {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.ar-section {
+  margin-bottom: 36px;
+}
+
+.ar-section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ar-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.ar-score-num {
+  font-family: var(--serif);
+  font-size: clamp(48px, 7vw, 72px);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.ar-score-denom {
+  font-family: var(--serif);
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ar-score-phrase {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  align-self: center;
+}
+
+.ar-signal-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.ar-signal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ar-signal-item:last-child { border-bottom: none; }
+
+.ar-signal-marker {
+  font-family: var(--mono);
+  font-size: 11px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.ar-signal-present .ar-signal-marker { color: var(--good); }
+.ar-signal-missing .ar-signal-marker  { color: var(--muted); }
+.ar-signal-present { color: var(--text2); }
+.ar-signal-missing { color: var(--muted); }
+
+.ar-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+}
+
+.ar-suggestion {
+  display: flex;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ar-suggestion:last-child { border-bottom: none; }
+
+.ar-suggestion-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.ar-suggestion-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text2);
+  font-weight: 300;
+}
+
+.ar-actions {
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 720px) {
   #masthead { padding: 44px 16px 40px; }

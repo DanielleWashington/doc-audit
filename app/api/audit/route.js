@@ -90,8 +90,7 @@ export async function POST(request) {
   }
 
   const analysis = analyzeContent(text, fileName);
-  const result = { ...analysis, skipped: false, flaggedForDeletion: false };
-  const report = buildReport([result], source);
+  const report = buildReport(analysis, source);
 
   return Response.json(report);
 }
