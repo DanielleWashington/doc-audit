@@ -4,7 +4,6 @@ import Link from 'next/link';
 
 export default function Header() {
   const [theme, setTheme] = useState('dark');
-  const [mode, setMode] = useState('human');
 
   useEffect(() => {
     const saved = localStorage.getItem('doc-audit-theme');
@@ -12,11 +11,8 @@ export default function Header() {
     setTheme(saved ?? (prefersDark ? 'dark' : 'light'));
   }, []);
 
-  useEffect(() => {
-    document.body.classList.toggle('agent-mode', mode === 'agent');
-  }, [mode]);
-
-  function applyTheme(next) {
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
     localStorage.setItem('doc-audit-theme', next);
     if (next === 'light') {
@@ -26,42 +22,24 @@ export default function Header() {
     }
   }
 
-  function toggleTheme() {
-    applyTheme(theme === 'dark' ? 'light' : 'dark');
-  }
-
   return (
-    <header>
-      <Link className="logo" href="/">doc-audit</Link>
-      <div className="header-right">
+    <header className="util-bar">
+      <Link href="/" className="util-logo">doc-audit</Link>
+      <div className="util-right">
         <button
           className="theme-btn"
           onClick={toggleTheme}
-          aria-label="Toggle light/dark mode"
+          aria-label="Toggle theme"
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          {theme === 'dark' ? '☀️' : '🌙'}
+          {theme === 'dark' ? '○' : '●'}
         </button>
-        <div className="toggle-group">
-          <button
-            className={`toggle-btn${mode === 'human' ? ' active' : ''}`}
-            onClick={() => setMode('human')}
-          >
-            Human
-          </button>
-          <button
-            className={`toggle-btn${mode === 'agent' ? ' active' : ''}`}
-            onClick={() => setMode('agent')}
-          >
-            Agent
-          </button>
-        </div>
-        <Link className="blog-link" href="/audit">Try the tool →</Link>
+        <Link href="/audit" className="util-link is-accent">Audit a doc</Link>
         <a
-          className="blog-link"
           href="https://dev.to/daniellewashington/documentation-is-a-decision-system-not-a-knowledge-base-4139"
           target="_blank"
           rel="noopener noreferrer"
+          className="util-link"
         >
           Read the post ↗
         </a>
