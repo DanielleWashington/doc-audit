@@ -1,11 +1,12 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import Header from '../components/Header.jsx';
 import ContrastDemo from '../components/ContrastDemo.jsx';
 import DecisionTree from '../components/DecisionTree.jsx';
 import AgentsView from '../components/AgentsView.jsx';
+import OverviewView from '../components/OverviewView.jsx';
 
 const SCENARIOS = [
   { id: 'api-auth',      label: 'API Authentication' },
@@ -15,18 +16,18 @@ const SCENARIOS = [
 
 function HomePageInner() {
   const searchParams = useSearchParams();
-  const initialView = searchParams.get('view') ?? 'argument';
+  const initialView = searchParams.get('view') ?? 'guide';
   const [activeView, setActiveView] = useState(initialView);
   const [scenario, setScenario] = useState('api-auth');
 
-  // Scenario subnav: visible for argument + tree views, not agents
+  // Scenario subnav: only visible in argument + tree views
   const showSubnav = activeView === 'argument' || activeView === 'tree';
-  // Agent Consumption tab only shows in argument view
+  // Agent Consumption scenario tab only shows in argument view
   const showAgentScenarioTab = activeView === 'argument';
 
   function handleViewChange(view) {
     setActiveView(view);
-    // Reset scenario to api-auth when switching to tree (no agent tab there)
+    // Reset to api-auth when switching to tree (no agent tab there)
     if (view === 'tree' && scenario === 'agent') setScenario('api-auth');
   }
 
@@ -35,7 +36,7 @@ function HomePageInner() {
       <a className="skip-link" href="#main-content">Skip to main content</a>
       <Header activeView={activeView} onViewChange={handleViewChange} />
 
-      {/* Scenario sub-nav */}
+      {/* Scenario sub-nav — only for argument + tree */}
       {showSubnav && (
         <div
           className="subnav-bar"
@@ -68,6 +69,17 @@ function HomePageInner() {
       )}
 
       <main id="main-content" tabIndex={-1}>
+
+        {/* ── The Guide (overview) ── */}
+        <div
+          id="view-guide"
+          className={`view-panel${activeView === 'guide' ? ' vp-active' : ''}`}
+          role="tabpanel"
+          aria-labelledby="pni-guide"
+          hidden={activeView !== 'guide'}
+        >
+          <OverviewView onViewChange={handleViewChange} />
+        </div>
 
         {/* ── The Argument ── */}
         <div

@@ -30,6 +30,7 @@ export default function Header({ activeView, onViewChange }) {
   }
 
   const navItems = [
+    { id: 'guide',    label: 'The Guide' },
     { id: 'argument', label: 'The Argument' },
     { id: 'tree',     label: 'The Tree' },
     { id: 'agents',   label: 'For Agents', isAgent: true },
