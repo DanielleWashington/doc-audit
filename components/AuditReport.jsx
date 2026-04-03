@@ -218,10 +218,8 @@ export default function AuditReport({ analysis, intendedPhase, onReset }) {
                 <p className="ar-section-label">How to make it stronger for agents</p>
                 <div className="ar-suggestions" role="list">
                   {agentData.signalsMissedLabels.map((label, i) => {
-                    const key = Object.keys(AGENT_SUGGESTIONS).find(k =>
-                      label.toLowerCase().includes(k.replace(/-/g, ' ').split(' ')[0])
-                    );
-                    const suggestion = key ? AGENT_SUGGESTIONS[key] : label;
+                    const key = agentData.signalsMissedKeys?.[i];
+                    const suggestion = key ? AGENT_SUGGESTIONS[key] ?? label : label;
                     return (
                       <div key={i} className="ar-suggestion" role="listitem">
                         <span className="ar-suggestion-num ans-agent" aria-label={`Suggestion ${i + 1}`}>{i + 1}.</span>
