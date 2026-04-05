@@ -4,3 +4,5 @@ node_modules/
 *.log
 audit.json
 .next/
+.vercel
+.env*.local

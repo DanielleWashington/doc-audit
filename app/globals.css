@@ -1629,6 +1629,45 @@ main { padding-top: 42px; }
   font-size: 14px; line-height: 1.8; color: var(--text2); font-weight: 300;
 }
 
+/* Guide CTA block */
+.ov-cta {
+  margin-top: 60px;
+  padding: 36px 40px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+}
+.ov-cta-heading {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.ov-cta-sub {
+  font-size: 14px;
+  color: var(--text2);
+  margin-bottom: 20px;
+  max-width: 560px;
+  line-height: 1.6;
+}
+.ov-cta-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.ov-cta-input {
+  flex: 1;
+  background: var(--bg3);
+}
+.ov-cta-footnote {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
 /* Footer note */
 .ov-footer-note {
   padding: 36px 0 0;
@@ -1652,4 +1691,9 @@ main { padding-top: 42px; }
   .ov-phase { border-right: none; border-bottom: 1px solid var(--border); }
   .ov-phase:last-child { border-bottom: none; }
   .ov-tool { grid-template-columns: 1fr; gap: 12px; }
+}
+@media (max-width: 600px) {
+  .ov-cta { padding: 24px 20px; }
+  .ov-cta-form { flex-direction: column; }
+  .ov-cta-form .btn { width: 100%; text-align: center; }
 }

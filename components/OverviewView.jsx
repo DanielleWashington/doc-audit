@@ -1,5 +1,7 @@
 'use client';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const FRAMEWORK = [
   {
@@ -68,6 +70,15 @@ const TOOLS = [
 ];
 
 export default function OverviewView({ onViewChange }) {
+  const router = useRouter();
+  const [ctaUrl, setCtaUrl] = useState('');
+
+  function handleCtaSubmit(e) {
+    e.preventDefault();
+    if (!ctaUrl.trim()) return;
+    router.push('/audit?url=' + encodeURIComponent(ctaUrl.trim()));
+  }
+
   return (
     <div className="overview-wrap">
 
@@ -218,10 +229,30 @@ export default function OverviewView({ onViewChange }) {
         </ol>
       </section>
 
-      {/* ── Footer note ── */}
-      <div className="ov-footer-note">
-        <p>
-          This tool is built on the ideas in{' '}
+      {/* ── CTA ── */}
+      <div className="ov-cta">
+        <h2 className="ov-cta-heading">Ready to audit your own docs?</h2>
+        <p className="ov-cta-sub">
+          Paste a URL and find out which day it reads as — and what one change would make the biggest difference.
+        </p>
+        <form className="ov-cta-form" onSubmit={handleCtaSubmit}>
+          <input
+            className="audit-input ov-cta-input"
+            type="url"
+            placeholder="https://your-project.com/docs/getting-started"
+            value={ctaUrl}
+            onChange={e => setCtaUrl(e.target.value)}
+          />
+          <button
+            className="btn btn-primary"
+            type="submit"
+            disabled={!ctaUrl.trim()}
+          >
+            Audit this doc →
+          </button>
+        </form>
+        <p className="ov-cta-footnote">
+          Built on the ideas in{' '}
           <a
             href="https://dev.to/daniellewashington/documentation-is-a-decision-system-not-a-knowledge-base-4139"
             target="_blank"
